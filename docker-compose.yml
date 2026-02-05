@@ -1,0 +1,65 @@
+version: '3.8'
+
+services:
+  dev-sandbox:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: dev-sandbox
+    ports:
+      - "8888:8888"
+    volumes:
+      # Mount your projects directory
+      - ~/projects:/home/developer/projects
+      # Persist Jupyter settings
+      - jupyter-config:/home/developer/.jupyter
+      # Persist pip cache for faster rebuilds
+      - pip-cache:/home/developer/.cache/pip
+      # Persist npm cache
+      - npm-cache:/home/developer/.npm
+    environment:
+      - JUPYTER_TOKEN=dev-sandbox-token
+      # Ollama host (accessible from container)
+      - OLLAMA_HOST=http://host.docker.internal:11434
+    # Resource limits (adjust as needed for your M1 Max)
+    deploy:
+      resources:
+        limits:
+          cpus: '6'
+          memory: 12G
+        reservations:
+          cpus: '2'
+          memory: 4G
+    # Allow access to host services (Ollama)
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    # Restart policy
+    restart: unless-stopped
+
+  # Optional: isolated sandbox with NO network (for untrusted code)
+  sandbox-offline:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: sandbox-offline
+    ports:
+      - "8889:8888"
+    volumes:
+      - ~/projects:/home/developer/projects:ro  # Read-only!
+      - sandbox-output:/home/developer/output   # Write here only
+    environment:
+      - JUPYTER_TOKEN=offline-sandbox-token
+    network_mode: none  # No network access at all
+    deploy:
+      resources:
+        limits:
+          cpus: '4'
+          memory: 8G
+    profiles:
+      - offline  # Only starts with: docker-compose --profile offline up
+
+volumes:
+  jupyter-config:
+  pip-cache:
+  npm-cache:
+  sandbox-output:
