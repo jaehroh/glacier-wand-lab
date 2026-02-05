@@ -40,7 +40,7 @@ Setup for a local dev environment for experimenting with AI/LLM development.
 │  ~/dev-environment/  — Dockerfiles, configs (infra-as-code)         │
 │  ~/.ollama/          — Downloaded models (managed by Ollama)        │
 └─────────────────────────────────────────────────────────────────────┘
-
+```
 ## When to Use What:
 
 | Task                                  | Environment                  |
