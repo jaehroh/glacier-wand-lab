@@ -21,6 +21,8 @@ RUN curl -fsSL https://deb.nodesource.com/setup_20.x | bash - \
 
 # Install global npm packages (as root, before switching users)
 RUN npm install -g tslab
+# Install Claude Code globally
+RUN npm install -g @anthropic-ai/claude-code
 
 # Create non-root user for security
 RUN useradd -m -s /bin/bash developer
@@ -31,6 +33,7 @@ WORKDIR /home/developer
 
 # Create cache directory (used by matplotlib, pip, etc.)
 RUN mkdir -p /home/developer/.cache
+RUN mkdir -p /home/developer/.claude
 
 # Set up Python environment
 ENV PATH="/home/developer/.local/bin:$PATH"
@@ -50,6 +53,18 @@ RUN pip install --user --no-cache-dir \
     python-dotenv \
     requests \
     tqdm
+
+# ── LangChain / LangGraph ecosystem ──────────────────────────────
+RUN pip install --user --no-cache-dir \
+    langchain \
+    langchain-community \
+    langchain-openai \
+    langchain-text-splitters \
+    langgraph \
+    langgraph-checkpoint \
+    chromadb \
+    pydantic \
+    rich
 
 # Install tslab kernel for Jupyter (now jupyter is available)
 RUN tslab install --user

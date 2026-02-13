@@ -1,4 +1,5 @@
-version: '3.8'
+# deprecated attribute
+# version: '3.8'
 
 services:
   dev-sandbox:
@@ -10,17 +11,31 @@ services:
       - "8888:8888"
     volumes:
       # Mount your projects directory
-      - ~/projects:/home/developer/projects
+      - /Users/jaeroh/projects:/home/developer/projects
       # Persist Jupyter settings
       - jupyter-config:/home/developer/.jupyter
       # Persist pip cache for faster rebuilds
       - pip-cache:/home/developer/.cache/pip
       # Persist npm cache
       - npm-cache:/home/developer/.npm
+
+      # === ADD THESE FOR CLAUDE CODE ===
+      # Mount Claude credentials from host (read-only for safety)
+      # - /Users/jaeroh/.claude:/home/developer/.claude:ro
+      # - /Users/jaeroh/.claude.json:/home/developer/.claude.json:ro
+
+      # instead persist claude volume
+      - claude-config:/home/developer/.claude
+
+      # ── LangChain: persist ChromaDB data across container restarts ──
+      - chroma-data:/home/developer/.chroma
     environment:
       - JUPYTER_TOKEN=dev-sandbox-token
       # Ollama host (accessible from container)
       - OLLAMA_HOST=http://host.docker.internal:11434
+      # ── LangChain: OpenAI-compatible endpoint for langchain-openai ──
+      - OPENAI_API_BASE=http://host.docker.internal:11434/v1
+      - OPENAI_API_KEY=not-needed-for-ollama
     # Resource limits (adjust as needed for your M1 Max)
     deploy:
       resources:
@@ -45,7 +60,7 @@ services:
     ports:
       - "8889:8888"
     volumes:
-      - ~/projects:/home/developer/projects:ro  # Read-only!
+      - /Users/jaeroh/projects:/home/developer/projects:ro  # Read-only!
       - sandbox-output:/home/developer/output   # Write here only
     environment:
       - JUPYTER_TOKEN=offline-sandbox-token
@@ -63,3 +78,5 @@ volumes:
   pip-cache:
   npm-cache:
   sandbox-output:
+  claude-config:
+  chroma-data:
